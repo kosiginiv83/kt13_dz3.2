@@ -15,4 +15,5 @@ data class Comment(
     override fun hashCode(): Int {
         return message.hashCode()
     }
+
 }
