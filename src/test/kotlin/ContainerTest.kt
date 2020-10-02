@@ -13,7 +13,7 @@ class ContainerTest {
 
     @Test
     fun add_Note_Success() {
-        val container = Container(1)
+        val container = Container(2)
         val note = Note("title", "text")
         container.add(note)
         assertEquals(1, container.notes.size)
@@ -21,7 +21,7 @@ class ContainerTest {
 
     @Test(expected = ElementAlreadyExistException::class)
     fun add_Note_NoteAlreadyExist() {
-        val container = Container(1)
+        val container = Container(3)
         val note = Note("title", "text")
         container.add(note)
         container.add(note)

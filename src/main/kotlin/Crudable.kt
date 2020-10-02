@@ -1,4 +1,6 @@
 interface Crudable {
 
-    fun <T> add(elem: T, nid: Int? = null)
+    fun <T> add(element: T, noteId: Int? = null)
+
+    fun <T> delete(element: T, noteId: Int? = null)
 }
