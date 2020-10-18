@@ -9,6 +9,9 @@ data class Note(
     val comments = mutableListOf<Comment>()
     val date: Long = java.time.Instant.now().toEpochMilli()
     var isDeleted: Boolean = false
+    private var commentsCount: Int = 0
+
+    fun getIncreasedCommentId(): Int = ++commentsCount
 
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
@@ -30,7 +33,7 @@ data class Comment(
     override val id: Int? = null,
 ) : Component(id) {
     val date: Long = java.time.Instant.now().toEpochMilli()
-    val isDeleted: Boolean = false
+    var isDeleted: Boolean = false
 
     override fun equals(other: Any?): Boolean {
         if (other === this) return true

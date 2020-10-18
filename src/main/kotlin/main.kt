@@ -1,5 +1,5 @@
 fun main() {
-    val container = Container(1)
+    val container = NotesBox()
     val note1 = Note("Title1", "text1")
     val note2 = Note("Title1", "text1")
     val note3 = Note("Title3", "text3")
