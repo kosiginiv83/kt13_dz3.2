@@ -11,12 +11,10 @@ data class Note(
     var isDeleted: Boolean = false
     private var commentsCount: Int = 0
 
-    fun getIncreasedCommentId(): Int = ++commentsCount
+    fun getNewCommentId(): Int = ++commentsCount
 
-    override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other == null) return false
-        if (other !is Note) return false
+    override fun equals(o: Any?): Boolean {
+        val other = o as? Note ?: return false
         return title == other.title && text == other.text
     }
 
@@ -35,10 +33,8 @@ data class Comment(
     val date: Long = java.time.Instant.now().toEpochMilli()
     var isDeleted: Boolean = false
 
-    override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other == null) return false
-        if (other !is Comment) return false
+    override fun equals(o: Any?): Boolean {
+        val other = o as? Comment ?: return false
         return message == other.message
     }
 

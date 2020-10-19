@@ -2,10 +2,8 @@ class NotesBox : Crudable, Restorable {
     val notesBox = mutableListOf<Note>()
     private var notesCount: Int = 0
 
-
-    fun <T> findElement(element: T, list: MutableList<T>): T? = list.find { it == element }
-    fun <T> findElementIndex(element: T, list: MutableList<T>): Int = list.indexOf(element)
-
+    fun <T> getElement(element: T, list: MutableList<T>): T? = list.find { it == element }
+    fun <T> getElementIndex(element: T, list: MutableList<T>): Int = list.indexOf(element)
 
     fun getNoteById(id: Int): Note = notesBox.find { it.id == id } ?:
             throw ElementNotFoundException("Записка с id: $id не найдена")
@@ -23,11 +21,10 @@ class NotesBox : Crudable, Restorable {
         when (element) {
             is NotesBox -> throw IllegalStateException("Нельзя добавить контейнер в контейнер")
             is Note -> {
-//                when (val foundNote = notesBox.find { it == element }) {
-                when (val foundNote = findElement(element, notesBox)) {
+                when (val foundNote = getElement(element, notesBox)) {
                     null -> {
                         notesBox.add(element.copy(id = ++notesCount))
-                        println("Записка c id: $notesCount была добавлена")
+                        println("Записка c id: $notesCount добавлена")
                     }
                     else -> {
                         if (foundNote.isDeleted) throw ElementAlreadyExistException("Идентичная " +
@@ -40,20 +37,23 @@ class NotesBox : Crudable, Restorable {
             is Comment -> {
                 if (noteId == null) throw IllegalStateException("При добавлении комментария " +
                         "нужно указать id записки")
-//                val foundNoteIndex = notesBox.indexOf(element)
-                val foundNoteIndex = findElementIndex(element, notesBox[noteId].comments)
-                when (foundNoteIndex) {
-                    -1 -> throw ElementNotFoundException("Нет записки с таким id")
+                val foundNote = getNoteById(noteId)
+                if (foundNote.isDeleted) throw
+                ElementIsDeletedException("Записка с id: $noteId находится в корзине")
+                when (val foundComment = getElement(element, foundNote.comments)) {
+                    null -> {
+                        val newCommentId = foundNote.getNewCommentId()
+                        foundNote.comments.add(element.copy(id = newCommentId))
+                        println("В записку с id: $noteId добавлен комментарий с id: $newCommentId")
+                    }
                     else -> {
-                        if (notesBox[foundNoteIndex].isDeleted) throw
-                                ElementIsDeletedException("Записка с id: $foundNoteIndex удалена")
+                        if (foundComment.isDeleted) throw ElementIsDeletedException("Идентичный " +
+                                "комментарий (id: ${element.id}) находится в корзине (записка " +
+                                "с id: $noteId)")
+                        throw ElementAlreadyExistException("Идентичный комментарий " +
+                                "(id: ${element.id}) уже существует (записка с id: $noteId)")
                     }
                 }
-                if (notesBox[foundNoteIndex].comments.contains(element)) throw
-                        ElementAlreadyExistException("В записке с id: ${notesBox[foundNoteIndex].id} уже есть такой комментарий")
-                val newCommentId = getNoteById(noteId)?.getIncreasedCommentId()
-                notesBox[foundNoteIndex].comments.add(element.copy(id = newCommentId))
-                println("В записку с id: ${notesBox[foundNoteIndex].id} добавлен комментарий с id: $newCommentId")
             }
         }
     }
@@ -62,20 +62,21 @@ class NotesBox : Crudable, Restorable {
         when (element) {
             is NotesBox -> throw IllegalStateException("Нельзя удалить контейнер")
             is Note -> {
-                when (val foundNoteIndex = notesBox.indexOf(element)) {
-                    -1 -> throw
-                            ElementNotFoundException("Отсутствует записка с id: ${element.id}")
+                when (val foundNote = getElement(element, notesBox)) {
+                    null -> throw ElementNotFoundException("Записка не найдена")
                     else -> {
-                        if (notesBox[foundNoteIndex].isDeleted) throw
-                                ElementIsDeletedException("Данная записка уже находится в корзине")
-                        notesBox[foundNoteIndex].isDeleted = true
-                        println("Записка c id: ${notesBox[foundNoteIndex].id} была удалена в корзину")
+                        if (foundNote.isDeleted) throw
+                        ElementIsDeletedException("Записка с id: ${foundNote.id} уже " +
+                                "находится в корзине")
+                        foundNote.isDeleted = true
+                        println("Записка c id: ${foundNote.id} удалена в корзину")
                     }
                 }
             }
             is Comment -> {
-                if (noteId == null) throw IllegalStateException("При удалении комментария нужно указать id записки")
-                val foundNoteIndex = notesBox.indexOf(element)
+                if (noteId == null) throw IllegalStateException("При удалении комментария " +
+                        "нужно указать id записки")
+
             }
         }
     }
