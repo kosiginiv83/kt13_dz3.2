@@ -12,6 +12,7 @@ fun main() {
 //    container.add(Comment("Comment"), 1)
 //    container.add(Comment("Comment"), 2)
     container.delete(note1)
+    println(note2.date)
 //    container.delete(note3)
-    container.add(note1)
+//    container.add(note1)
 }

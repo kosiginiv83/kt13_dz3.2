@@ -20,44 +20,49 @@ class NotesBox : Crudable, Restorable {
     override fun <T> add(element: T, noteId: Int?) {
         when (element) {
             is NotesBox -> throw IllegalStateException("Нельзя добавить контейнер в контейнер")
-            is Note -> {
-                when (val foundNote = getElement(element, notesBox)) {
-                    null -> {
-                        notesBox.add(element.copy(id = ++notesCount))
-                        println("Записка c id: $notesCount добавлена")
-                    }
-                    else -> {
-                        if (foundNote.isDeleted) throw ElementAlreadyExistException("Идентичная " +
-                                "записка (id: ${foundNote.id}) находится в корзине")
-                        throw ElementAlreadyExistException("Идентичная записка " +
-                                "(id: ${foundNote.id}) уже существует")
-                    }
-                }
+            is Note -> addNote(element)
+            is Comment -> addComment(element, noteId)
+        }
+    }
+
+    private fun addNote(element: Note) {
+        when (val foundNote = getElement(element, notesBox)) {
+            null -> {
+                notesBox.add(element.copy(id = ++notesCount))
+                println("Записка c id: $notesCount добавлена")
             }
-            is Comment -> {
-                if (noteId == null) throw IllegalStateException("При добавлении комментария " +
-                        "нужно указать id записки")
-                val foundNote = getNoteById(noteId)
-                if (foundNote.isDeleted) throw
-                ElementIsDeletedException("Записка с id: $noteId находится в корзине")
-                when (val foundComment = getElement(element, foundNote.comments)) {
-                    null -> {
-                        val newCommentId = foundNote.getNewCommentId()
-                        foundNote.comments.add(element.copy(id = newCommentId))
-                        println("В записку с id: $noteId добавлен комментарий с id: $newCommentId")
-                    }
-                    else -> {
-                        if (foundComment.isDeleted) throw ElementIsDeletedException("Идентичный " +
-                                "комментарий (id: ${element.id}) находится в корзине (записка " +
-                                "с id: $noteId)")
-                        throw ElementAlreadyExistException("Идентичный комментарий " +
-                                "(id: ${element.id}) уже существует (записка с id: $noteId)")
-                    }
-                }
+            else -> {
+                if (foundNote.isDeleted) throw ElementAlreadyExistException("Идентичная " +
+                        "записка (id: ${foundNote.id}) находится в корзине")
+                throw ElementAlreadyExistException("Идентичная записка " +
+                        "(id: ${foundNote.id}) уже существует")
             }
         }
     }
 
+    private fun addComment(element: Comment, noteId: Int?) {
+        if (noteId == null) throw IllegalStateException("При добавлении комментария " +
+                "нужно указать id записки")
+        val foundNote = getNoteById(noteId)
+        if (foundNote.isDeleted) throw
+        ElementIsDeletedException("Записка с id: $noteId находится в корзине")
+        when (val foundComment = getElement(element, foundNote.comments)) {
+            null -> {
+                val newCommentId = foundNote.getNewCommentId()
+                foundNote.comments.add(element.copy(id = newCommentId))
+                println("В записку с id: $noteId добавлен комментарий с id: $newCommentId")
+            }
+            else -> {
+                if (foundComment.isDeleted) throw ElementIsDeletedException("Идентичный " +
+                        "комментарий (id: ${element.id}) находится в корзине (записка " +
+                        "с id: $noteId)")
+                throw ElementAlreadyExistException("Идентичный комментарий " +
+                        "(id: ${element.id}) уже существует (записка с id: $noteId)")
+            }
+        }
+    }
+
+    
     override fun <T> delete(element: T, noteId: Int?) {
         when (element) {
             is NotesBox -> throw IllegalStateException("Нельзя удалить контейнер")
@@ -68,7 +73,7 @@ class NotesBox : Crudable, Restorable {
                         if (foundNote.isDeleted) throw
                         ElementIsDeletedException("Записка с id: ${foundNote.id} уже " +
                                 "находится в корзине")
-                        foundNote.isDeleted = true
+                        foundNote.setDeletedTo(true)
                         println("Записка c id: ${foundNote.id} удалена в корзину")
                     }
                 }

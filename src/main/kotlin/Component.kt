@@ -1,4 +1,13 @@
-abstract class Component(open val id: Int?)
+abstract class Component(open val id: Int?) {
+    val date: Long = java.time.Instant.now().toEpochMilli()
+    var isDeleted = false
+        private set(value) {
+            field = value
+        }
+    fun setDeletedTo(value: Boolean) {
+        isDeleted = value
+    }
+}
 
 
 data class Note(
@@ -7,8 +16,6 @@ data class Note(
     override val id: Int? = null,
 ) : Component(id) {
     val comments = mutableListOf<Comment>()
-    val date: Long = java.time.Instant.now().toEpochMilli()
-    var isDeleted: Boolean = false
     private var commentsCount: Int = 0
 
     fun getNewCommentId(): Int = ++commentsCount
@@ -30,8 +37,6 @@ data class Comment(
     val message: String,
     override val id: Int? = null,
 ) : Component(id) {
-    val date: Long = java.time.Instant.now().toEpochMilli()
-    var isDeleted: Boolean = false
 
     override fun equals(o: Any?): Boolean {
         val other = o as? Comment ?: return false
